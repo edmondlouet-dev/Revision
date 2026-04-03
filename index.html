@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0c0c0e; --surface:#131316; --surface2:#19191f; --surface3:#202028;
+  --border:#24242e; --border2:#32323f; --border3:#3e3e50;
+  --text:#eeeef2; --muted:#68687a; --dim:#38384a;
+  --en:#3ecf8e; --en-bg:#0d2419;
+  --lit:#26c6a0; --lit-bg:#092218;
+  --hi:#f06292; --hi-bg:#260d18;
+  --ge:#9b8cf7; --ge-bg:#171230;
+  --ma:#4fc3f7; --ma-bg:#091c2c;
+  --bi:#aed581; --bi-bg:#17220d;
+  --ch:#ffb74d; --ch-bg:#261806;
+  --ph:#80cbc4; --ph-bg:#091f1d;
+  --fm:#ef9a9a; --fm-bg:#260d0d;
+  --dt:#ce93d8; --dt-bg:#1b0d2c;
+  --warn:#ffb74d; --danger:#f06292; --ok:#3ecf8e;
+  --r:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;-webkit-font-smoothing:antialiased}
+
+.shell{max-width:880px;margin:0 auto;padding:24px 18px 80px}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.hdr-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.3px;color:var(--muted)}
+.hdr-date{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+
+/* ── TOP ROW ── */
+.top-row{display:flex;gap:7px;margin-bottom:20px;flex-wrap:wrap}
+.tbtn{padding:6px 13px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.tbtn:hover{color:var(--text);border-color:var(--border2)}
+.tbtn.warn{border-color:rgba(240,98,146,.4);color:var(--danger);display:none}
+
+/* ── EXAM STRIP ── */
+.sec-label{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.strip{display:flex;gap:5px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none;margin-bottom:24px}
+.strip::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:7px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface);min-width:80px;text-align:center}
+.chip.urgent{border-color:rgba(240,98,146,.35);background:rgba(38,13,24,.8)}
+.chip.soon{border-color:rgba(255,183,77,.25);background:rgba(38,24,6,.7)}
+.chip-days{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;line-height:1;margin-bottom:3px}
+.chip.urgent .chip-days{color:var(--hi)}
+.chip.soon .chip-days{color:var(--warn)}
+.chip-lbl{font-size:9px;color:var(--muted);line-height:1.3}
+.chip-dot{width:4px;height:4px;border-radius:50%;margin:4px auto 0}
+
+/* ── GRID ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:600px){.grid2{grid-template-columns:1fr}}
+
+/* ── CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px}
+.card-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:13px}
+
+/* ── TASK INPUT ── */
+.task-input-row{display:flex;gap:7px;margin-bottom:8px}
+.task-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:8px 10px;outline:none;transition:border-color .15s}
+.task-input:focus{border-color:var(--border2)}
+.task-input::placeholder{color:var(--dim)}
+.add-btn{background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--muted);width:32px;cursor:pointer;font-size:16px;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.add-btn:hover{color:var(--text);border-color:var(--border2)}
+
+.sub-pill{display:inline-flex;align-items:center;font-size:10px;padding:2px 8px;border-radius:20px;margin-bottom:8px;opacity:0;transition:opacity .18s;border-width:1px;border-style:solid}
+.sub-pill.show{opacity:1}
+
+/* ── TASKS ── */
+.task-list{display:flex;flex-direction:column;gap:4px}
+.task-item{display:flex;align-items:flex-start;gap:8px;padding:8px 9px;border-radius:7px;border:1px solid transparent;background:var(--surface2);transition:border-color .15s}
+.task-item:hover{border-color:var(--border)}
+.task-item.flagged{border-color:rgba(251,191,36,.22);background:#1c1a12}
+.task-item.done .task-txt{color:var(--dim);text-decoration:line-through}
+.task-item.clash{border-color:rgba(255,183,77,.3)}
+
+/* tick = done + £8 */
+.tick{width:18px;height:18px;border:1px solid var(--border);border-radius:4px;flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;background:none;transition:all .15s}
+.tick:hover{border-color:var(--ok);color:var(--ok)}
+.task-item.done .tick{background:var(--ok);border-color:var(--ok);color:#0d2419}
+
+.flag-btn{background:none;border:none;cursor:pointer;font-size:12px;opacity:.2;transition:opacity .15s;padding:1px 0;line-height:1;color:#fbbf24;flex-shrink:0;margin-top:1px}
+.flag-btn:hover{opacity:.6}
+.task-item.flagged .flag-btn{opacity:1}
+
+.sub-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.task-body{flex:1;min-width:0}
+.task-txt{font-size:12px;line-height:1.35;word-break:break-word}
+.task-meta{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
+.sub-badge{font-size:9px;padding:1px 6px;border-radius:20px}
+.date-tag{font-size:9px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:4px;padding:1px 5px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s}
+.date-tag:hover{border-color:var(--border2);color:var(--text)}
+.clash-warn{font-size:9px;color:var(--warn)}
+.overdue-tag{font-size:9px;color:var(--warn);margin-right:2px}
+
+.del-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:0;opacity:0;transition:opacity .15s;line-height:1;flex-shrink:0;margin-top:1px}
+.task-item:hover .del-btn{opacity:1}
+
+.flag-hint{font-size:10px;color:var(--dim);margin-top:9px}
+
+/* ── SUGGESTED TASKS ── */
+.suggestion-section{margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+.suggestion-label{font-size:9px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+.sug-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;border:1px dashed var(--border);background:transparent;margin-bottom:4px;opacity:.7}
+.sug-txt{flex:1;font-size:11px;color:var(--muted)}
+.sug-why{font-size:9px;color:var(--dim);margin-top:2px}
+.sug-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.sug-approve{background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:10px;padding:2px 8px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;transition:all .15s}
+.sug-approve:hover{border-color:var(--ok);color:var(--ok)}
+.sug-decline{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:0;transition:color .15s}
+.sug-decline:hover{color:var(--muted)}
+
+/* ── PAPER TRACKER ── */
+.psb{margin-bottom:14px}
+.psb-hdr{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.psb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.psb-name{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;flex:1}
+.psb-rows{display:flex;flex-direction:column;gap:6px}
+.paper-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.paper-lbl{font-size:10px;color:var(--muted);width:74px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.paper-lbl.topic-lbl{font-style:italic;color:var(--dim)}
+.entries{display:flex;gap:4px;flex-wrap:wrap;align-items:center;flex:1}
+.e-chip{position:relative;display:flex;align-items:center;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-size:10px;cursor:default}
+.e-chip:hover .e-del{display:flex}
+.e-yr{color:var(--muted);font-size:9px}
+.e-pct{font-weight:500}
+.e-del{position:absolute;top:-4px;right:-4px;background:var(--surface3);border:1px solid var(--border);border-radius:50%;width:12px;height:12px;display:none;align-items:center;justify-content:center;font-size:8px;color:var(--muted);cursor:pointer}
+.add-row{display:flex;align-items:center;gap:4px}
+.mini-in{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:3px 6px;outline:none;transition:border-color .15s}
+.mini-in:focus{border-color:var(--border2)}
+.mini-in::placeholder{color:var(--dim)}
+.mini-btn{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--muted);width:20px;height:20px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mini-btn:hover{color:var(--text);border-color:var(--border2)}
+
+/* grade badge inline */
+.grade-inline{font-family:'Syne',sans-serif;font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;margin-left:4px}
+
+/* error input row */
+.error-input-row{display:flex;gap:5px;margin-top:6px;align-items:center}
+.error-in{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:4px 7px;outline:none;transition:border-color .15s}
+.error-in:focus{border-color:var(--border2)}
+.error-in::placeholder{color:var(--dim)}
+.ai-btn{background:var(--surface2);border:1px solid var(--border2);border-radius:5px;color:var(--ge);font-size:9px;padding:4px 8px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;white-space:nowrap;transition:all .15s}
+.ai-btn:hover{background:var(--border);color:var(--text)}
+.ai-btn:disabled{opacity:.4;cursor:not-allowed}
+.error-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.error-tag{font-size:9px;padding:2px 7px;border-radius:20px;background:var(--surface3);border:1px solid var(--border);color:var(--muted)}
+.error-tag.sorted{color:var(--ch);border-color:rgba(255,183,77,.3)}
+.ai-thinking{font-size:9px;color:var(--ge);margin-top:4px;display:none}
+
+/* ── WEAK TOPICS ── */
+.weak-sub{margin-bottom:10px}
+.weak-hdr{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.weak-dot{width:5px;height:5px;border-radius:50%}
+.weak-name{font-size:10px;font-weight:600;flex:1}
+.weak-pills{display:flex;flex-wrap:wrap;gap:4px}
+.wpill{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+.wpill.x2{color:var(--warn);border-color:rgba(255,183,77,.3)}
+.wpill.x3{color:var(--danger);border-color:rgba(240,98,146,.3)}
+
+/* ── SCORE SUMMARY ── */
+.score-row-item{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.score-bar-wrap{height:3px;flex:2;background:var(--border);border-radius:2px;overflow:hidden}
+.score-bar{height:100%;border-radius:2px}
+
+/* ── MACBOOK ── */
+.mb-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:14px;margin-top:14px}
+.mb-icon{font-size:18px;flex-shrink:0}
+.mb-info{flex:1}
+.mb-lbl{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.mb-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:4px}
+.mb-fill{height:100%;background:linear-gradient(90deg,var(--ma),var(--ge));border-radius:2px;transition:width .4s}
+.mb-nums{display:flex;justify-content:space-between;font-size:9px;color:var(--muted)}
+.mb-pct{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;flex-shrink:0;transition:color .3s}
+.mb-edit{background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:0}
+.mb-edit:hover{color:var(--muted)}
+.penalty-note{background:#1e0a12;border:1px solid rgba(240,98,146,.35);border-radius:8px;padding:9px 13px;font-size:11px;color:var(--danger);margin-top:10px;display:none}
+.penalty-note.show{display:block}
+
+/* ── MODALS ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:300;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:13px;padding:22px;width:340px;max-width:92vw;transform:translateY(8px);transition:transform .2s;max-height:85vh;overflow-y:auto}
+.overlay.open .modal{transform:translateY(0)}
+.modal-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.modal-actions{display:flex;gap:7px;margin-top:16px}
+.mbtn{flex:1;padding:9px;border-radius:7px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.mbtn:hover{background:var(--border)}
+.mbtn.primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+.mbtn.primary:hover{opacity:.85}
+
+/* card preview */
+.card-preview{background:#f4efe4;color:#1a1a1a;border-radius:8px;padding:14px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.9}
+.cp-date{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px}
+.cp-line{display:flex;gap:7px;align-items:flex-start;border-bottom:1px solid #e0ddd5;padding-bottom:3px;margin-bottom:3px}
+.cp-num{color:#aaa;flex-shrink:0;width:13px}
+.cp-task{flex:1;min-height:18px}
+
+/* upcoming list */
+.up-list{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto}
+.up-item{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;background:var(--surface2);border-radius:7px;border:1px solid transparent}
+.up-item.exam-item{border-color:var(--border)}
+.up-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.up-body{flex:1}
+.up-txt{font-size:11px;line-height:1.3}
+.up-when{font-size:9px;color:var(--muted);margin-top:2px}
+
+.empty{font-size:11px;color:var(--dim);text-align:center;padding:14px 0}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── PRINT ── */
+@media print{
+  .shell{display:none}
+  .print-card{display:block!important;width:85mm;min-height:52mm;padding:8mm;font-family:monospace;font-size:9pt;color:#000}
+}
+.print-card{display:none}
+
+/* ── EOD NOTIFICATION ── */
+.eod-banner{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:11px;z-index:200;display:none;cursor:pointer;transition:all .2s;max-width:220px}
+.eod-banner.show{display:block}
+.eod-banner:hover{border-color:var(--border3)}
+.eod-banner-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;margin-bottom:3px}
+.eod-banner-sub{color:var(--muted);font-size:10px}
+</style>
+</head>
+<body>
+
+<!-- PRINT CARD -->
+<div class="print-card" id="printCard">
+  <div style="font-size:7pt;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5mm" id="printDate"></div>
+  <div style="font-size:9pt;font-weight:bold;margin-bottom:4mm">TOMORROW</div>
+  <div id="printLines"></div>
+  <div style="margin-top:5mm;border-top:.5px solid #ddd;padding-top:2mm;font-size:7pt;color:#aaa">No YouTube before work · MacBook goal</div>
+</div>
+
+<div class="shell">
+
+  <div class="hdr">
+    <div class="hdr-title">Revision</div>
+    <div class="hdr-date" id="hdrDate"></div>
+  </div>
+
+  <div class="top-row">
+    <button class="tbtn" onclick="openUpcoming()">📅 Upcoming</button>
+    <button class="tbtn" onclick="openEod()">🌙 End of Day</button>
+    <button class="tbtn warn" id="penBtn" onclick="runPenalty()">⚠ Close Day</button>
+  </div>
+
+  <div class="sec-label">Exams</div>
+  <div class="strip" id="examStrip"></div>
+
+  <div class="grid2">
+    <!-- TASKS -->
+    <div class="card">
+      <div class="card-title">Today's Tasks</div>
+      <div class="task-input-row">
+        <input class="task-input" id="taskIn" placeholder="add task… (press T)" oninput="onInput()" onkeydown="onKey(event)" autocomplete="off">
+        <button class="add-btn" onclick="addTask()">+</button>
+      </div>
+      <div class="sub-pill" id="subPill"></div>
+      <div class="task-list" id="taskList"></div>
+      <div class="suggestion-section" id="sugSection" style="display:none">
+        <div class="suggestion-label">Suggested</div>
+        <div id="sugList"></div>
+      </div>
+      <div class="flag-hint">✓ tick = done + £8 &nbsp;·&nbsp; ★ = do first &nbsp;·&nbsp; T shortcut</div>
+    </div>
+
+    <!-- PAPER SCORES -->
+    <div class="card">
+      <div class="card-title">Paper Scores</div>
+      <div id="paperTracker"></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Recurring Weak Topics</div>
+      <div id="weakGrid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Score Summary</div>
+      <div id="scoreSummary"></div>
+    </div>
+  </div>
+
+  <div class="mb-bar">
+    <div class="mb-icon">💻</div>
+    <div class="mb-info">
+      <div class="mb-lbl">MacBook Goal</div>
+      <div class="mb-track"><div class="mb-fill" id="mbFill" style="width:0%"></div></div>
+      <div class="mb-nums"><span id="mbSaved">£0 saved</span><span>£1,200 target</span></div>
+    </div>
+    <div class="mb-pct" id="mbPct">0%</div>
+    <button class="mb-edit" onclick="editMb()">✎</button>
+  </div>
+  <div class="penalty-note" id="penNote"></div>
+
+</div>
+
+<!-- END OF DAY BANNER -->
+<div class="eod-banner" id="eodBanner" onclick="openEod()">
+  <div class="eod-banner-title">🌙 End of Day</div>
+  <div class="eod-banner-sub">Write tomorrow's card →</div>
+</div>
+
+<!-- UPCOMING MODAL -->
+<div class="overlay" id="upOverlay" onclick="if(event.target===this)closeModal('upOverlay')">
+  <div class="modal">
+    <div class="modal-title">Upcoming</div>
+    <div class="modal-sub">Next 14 days — exams and tasks</div>
+    <div class="up-list" id="upList"></div>
+    <div class="modal-actions"><button class="mbtn primary" onclick="closeModal('upOverlay')">Close</button></div>
+  </div>
+</div>
+
+<!-- END OF DAY MODAL -->
+<div class="overlay" id="eodOverlay" onclick="if(event.target===this)closeModal('eodOverlay')">
+  <div class="modal">
+    <div class="modal-title">End of Day</div>
+    <div class="modal-sub">Write these on your card tonight.</div>
+    <div class="card-preview">
+      <div class="cp-date" id="eodDateLbl"></div>
+      <div id="eodLines"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModal('eodOverlay')">Close</button>
+      <button class="mbtn primary" onclick="window.print()">Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- DATE OVERRIDE MODAL -->
+<div class="overlay" id="dateOverlay" onclick="if(event.target===this)closeModal('dateOverlay')">
+  <div class="modal" style="width:270px">
+    <div class="modal-title">Change Date</div>
+    <div class="modal-sub">Override the suggested date.</div>
+    <input type="date" id="datePicker" style="background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:8px 10px;width:100%;outline:none">
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModal('dateOverlay')">Cancel</button>
+      <button class="mbtn primary" onclick="confirmDate()">Set</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// SUBJECT DATA
+// ══════════════════════════════════════════
+const SUBS = {
+  en:  {l:'English',      sh:'ENG',c:'var(--en)', bg:'var(--en-bg)',
+        kw:['english','reading','comprehension','writing','summary','composition','writer'],
+        papers:['Reading (P1)','Directed Writing (P2)'],
+        topics:['Reading comprehension','Directed writing','Summary','Composition',"Writer's effect",'Inference','Language analysis']},
+  lit: {l:'Lit English',  sh:'LIT',c:'var(--lit)',bg:'var(--lit-bg)',
+        kw:['lit ','literature','poem','poetry','prose','drama','unseen','macbeth','anthology','jekyll'],
+        papers:['Poetry + Prose (P1)','Drama (P2)','Unseen (P3)'],
+        topics:['Poetry themes','Prose analysis','Drama open text','Unseen poem','Language & structure','Context','Key quotes']},
+  hi:  {l:'History',      sh:'HIS',c:'var(--hi)', bg:'var(--hi-bg)',
+        kw:['history','essay','prohibition','wwi','wwii','cold war','versailles','weimar','dictator','source','peel','nazi','league','stalin','hitler'],
+        papers:['Structured Qs (P1)','Document Qs (P2)'],
+        topics:['WWI causes','Treaty of Versailles','Rise of dictators','WWII causes','Cold War','Source analysis','PEEL essays','Prohibition','League of Nations','Weimar Republic']},
+  ge:  {l:'German',       sh:'GER',c:'var(--ge)', bg:'var(--ge-bg)',
+        kw:['german','deutsch','vocab','grammar','listening','speaking','subjunctive','conditional'],
+        papers:['Listening (P1)','Reading (P2)','Writing (P3)'],
+        topics:['Vocab: home/family','Vocab: school','Vocab: free time','Grammar: past tense','Grammar: opinions','Listening technique','Writing task types','Conditional','Subjunctive']},
+  ma:  {l:'Maths',        sh:'MAT',c:'var(--ma)', bg:'var(--ma-bg)',
+        kw:['maths','math','algebra','trig','geometry','statistics','calculator','number','proof','vector','matrix','matrices'],
+        papers:['Paper 1H Non-calc','Paper 2H Calc'],
+        topics:['Algebra & sequences','Coordinate geometry','Trigonometry','Matrices','Statistics','Number','Geometry','Proof','Circle theorems','Vectors']},
+  bi:  {l:'Biology',      sh:'BIO',c:'var(--bi)', bg:'var(--bi-bg)',
+        kw:['biology','bio','cell','osmosis','genetics','ecology','evolution','respiration','photosynthesis','dna'],
+        papers:['Paper 1B','Paper 2B'],
+        topics:['Cell structure','Diffusion & osmosis','Respiration','Photosynthesis','Nervous system','Genetics & inheritance','Ecology','Evolution','DNA']},
+  ch:  {l:'Chemistry',    sh:'CHE',c:'var(--ch)', bg:'var(--ch-bg)',
+        kw:['chemistry','chem','organic','atomic','bonding','moles','quantitative','electrolysis','titration','rate'],
+        papers:['Paper 1H','Paper 2H'],
+        topics:['Atomic structure','Bonding','Quantitative chemistry','Chemical changes','Energy changes','Rate & equilibrium','Organic chemistry','Chemical analysis','Required practicals']},
+  ph:  {l:'Physics',      sh:'PHY',c:'var(--ph)', bg:'var(--ph-bg)',
+        kw:['physics','phys','force','motion','electricity','wave','radioactiv','nuclear','astrophysics','magnetism'],
+        papers:['Paper 1P','Paper 2P'],
+        topics:['Forces & motion','Electricity','Waves','Energy resources','Magnetism','Radioactivity','Astrophysics','Equations']},
+  fm:  {l:'Further Maths',sh:'FM', c:'var(--fm)', bg:'var(--fm-bg)',
+        kw:['further maths','fm ','calculus','factor theorem','function','inequalit','series'],
+        papers:['Paper 1','Paper 2'],
+        topics:['Algebra','Calculus','Matrices','Trigonometry','Functions','Sequences','Proof','Inequalities','Factor theorem']},
+  dt:  {l:'D&T',          sh:'D&T',c:'var(--dt)', bg:'var(--dt-bg)',
+        kw:['design','d&t','dt ','material','sustainability','iterative','product analysis','systems','lca'],
+        papers:['Written Paper'],
+        topics:['Materials & properties','Sustainability & LCA','Forces & stresses','Electronics & systems','Iterative design','Product analysis']},
+};
+
+const EXAMS = [
+  {l:'German',      d:'2026-04-28',s:'ge'},{l:'English P1', d:'2026-05-06',s:'en'},
+  {l:'History P1',  d:'2026-05-07',s:'hi'},{l:'Lit P1',     d:'2026-05-08',s:'lit'},
+  {l:'Lit P2',      d:'2026-05-11',s:'lit'},{l:'Biology P1',d:'2026-05-12',s:'bi'},
+  {l:'German R',    d:'2026-05-13',s:'ge'},{l:'Maths P1',   d:'2026-05-14',s:'ma'},
+  {l:'History P2',  d:'2026-05-15',s:'hi'},{l:'Chem P1',    d:'2026-05-18',s:'ch'},
+  {l:'English P2',  d:'2026-05-21',s:'en'},{l:'Physics P1', d:'2026-06-02',s:'ph'},
+  {l:'Maths P2',    d:'2026-06-03',s:'ma'},{l:'Bio+FM P1',  d:'2026-06-08',s:'bi'},
+  {l:'D&T',         d:'2026-06-10',s:'dt'},{l:'Chem P2',    d:'2026-06-12',s:'ch'},
+  {l:'Phys+FM P2',  d:'2026-06-15',s:'ph'},
+];
+
+const MB_GOAL=1200, SES_VAL=8, MISS_PEN=2;
+const EOD_HOUR=21; // 9pm auto-trigger
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+const G=k=>JSON.parse(localStorage.getItem(k)||'null');
+const P=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+function today(){return new Date().toISOString().split('T')[0]}
+function addDays(d,n){const x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().split('T')[0]}
+function daysUntil(d){const n=new Date();n.setHours(0,0,0,0);return Math.round((new Date(d+'T12:00:00')-n)/86400000)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+function esc(s){return s?(s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
+function fmtD(d){if(!d)return'';const x=new Date(d+'T12:00:00');return['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][x.getDay()]+' '+x.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][x.getMonth()]}
+function isSchool(d){return d>='2026-04-21'}
+function isWeekend(d){const x=new Date(d+'T12:00:00');return x.getDay()===0||x.getDay()===6}
+function maxT(d){return(isSchool(d)&&!isWeekend(d))?2:3}
+function isHeavy(t){return/essay|write|writing|plan|draft|poem|poetry|prose|english\b|history\b/i.test(t)}
+function gColor(p){return p>=90?'var(--en)':p>=80?'var(--lit)':p>=70?'var(--ma)':p>=60?'var(--ge)':p>=50?'var(--warn)':'var(--danger)'}
+function gLabel(p){return p>=90?'9':p>=80?'8':p>=70?'7':p>=60?'6':p>=50?'5':p>=40?'4':'3'}
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let tasks    = G('rv_tasks')   || [];
+let papers   = G('rv_papers')  || mkPapers();
+let savings  = G('rv_sav')     || 0;
+let declined = G('rv_declined')|| []; // declined suggestion ids
+let editId   = null;
+let detSub   = null;
+
+function mkPapers(){
+  const r={};
+  Object.keys(SUBS).forEach(k=>{
+    r[k]={papers:{},topics:[],errors:{}};
+    SUBS[k].papers.forEach(p=>{r[k].papers[p]=[];});
+  });
+  return r;
+}
+function save(){P('rv_tasks',tasks);P('rv_papers',papers);P('rv_sav',savings);P('rv_declined',declined)}
+
+// ══════════════════════════════════════════
+// SUBJECT DETECTION
+// ══════════════════════════════════════════
+function detectSub(text){
+  const t=text.toLowerCase();
+  let best=null,bestN=0;
+  Object.entries(SUBS).forEach(([k,s])=>{
+    const n=s.kw.filter(w=>t.includes(w)).length;
+    if(n>bestN){bestN=n;best=k;}
+  });
+  return bestN>0?best:null;
+}
+
+// ══════════════════════════════════════════
+// SMART DATE SUGGESTION
+// ══════════════════════════════════════════
+function suggestDate(text,sub){
+  const t=today();
+  const isReview=/review|revise|go over|look at|re-read|check/i.test(text);
+  const heavy=isHeavy(text);
+  let examDate=null;
+  if(sub){
+    const ex=EXAMS.filter(e=>e.s===sub&&daysUntil(e.d)>=0);
+    if(ex.length)examDate=ex[0].d;
+  }
+  let base=isReview?5:2;
+  if(examDate&&daysUntil(examDate)<10)base=1;
+  // Try today too if no tasks yet
+  for(let i=0;i<=21;i++){
+    const c=addDays(t,i===0?0:base+(i-1));
+    if(examDate&&c>examDate)break;
+    const dayT=tasks.filter(tk=>tk.date===c&&!tk.done);
+    if(dayT.length>=maxT(c))continue;
+    if(heavy&&dayT.some(tk=>isHeavy(tk.text)))continue;
+    return c;
+  }
+  return addDays(t,base);
+}
+
+// ══════════════════════════════════════════
+// SUGGESTIONS ENGINE
+// ══════════════════════════════════════════
+function generateSuggestions(){
+  const suggestions=[];
+  const t=today();
+  const existing=tasks.filter(tk=>!tk.done&&tk.date===t).map(tk=>tk.text.toLowerCase());
+
+  // 1. Urgent exam coming — suggest review
+  const urgentExams=EXAMS.filter(e=>daysUntil(e.d)>=0&&daysUntil(e.d)<=10);
+  urgentExams.forEach(ex=>{
+    const id='exam-'+ex.s+'-'+ex.d;
+    if(declined.includes(id))return;
+    const s=SUBS[ex.s];
+    // Don't suggest if already have this subject today
+    if(existing.some(e=>s.kw.some(k=>e.includes(k))))return;
+    suggestions.push({id,sub:ex.s,text:`Review ${s.l} — ${daysUntil(ex.d)}d to exam`,why:`${ex.l} in ${daysUntil(ex.d)} days`,date:suggestDate('review',ex.s)});
+  });
+
+  // 2. Weak topics — suggest targeting them
+  Object.entries(papers).forEach(([sub,pd])=>{
+    const weak=(pd.topics||[]).filter(e=>e.pct<65);
+    if(!weak.length)return;
+    const id='weak-'+sub+'-'+weak[0].lbl.slice(0,8);
+    if(declined.includes(id))return;
+    if(existing.some(e=>SUBS[sub].kw.some(k=>e.includes(k))))return;
+    suggestions.push({id,sub,text:`${SUBS[sub].l} — target: ${weak[0].lbl}`,why:`Scored ${weak[0].pct}% on this topic`,date:suggestDate('review',sub)});
+  });
+
+  // Return max 1 per day (least intrusive)
+  return suggestions.slice(0,1);
+}
+
+// ══════════════════════════════════════════
+// RENDER HEADER
+// ══════════════════════════════════════════
+function renderHeader(){
+  const d=new Date();
+  document.getElementById('hdrDate').textContent=
+    ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]+
+    ', '+d.getDate()+' '+
+    ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+}
+
+// ══════════════════════════════════════════
+// EXAM STRIP
+// ══════════════════════════════════════════
+function renderStrip(){
+  document.getElementById('examStrip').innerHTML=EXAMS.filter(e=>daysUntil(e.d)>=-1).map(e=>{
+    const d=daysUntil(e.d),s=SUBS[e.s];
+    return`<div class="chip ${d<=7?'urgent':d<=21?'soon':''}">
+      <div class="chip-days">${d<0?'DONE':d===0?'TODAY':d}</div>
+      <div class="chip-lbl">${esc(e.l)}</div>
+      <div class="chip-dot" style="background:${s.c}"></div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// TASK INPUT
+// ══════════════════════════════════════════
+function onInput(){
+  const v=document.getElementById('taskIn').value;
+  detSub=detectSub(v);
+  const pill=document.getElementById('subPill');
+  if(detSub&&v.length>2){
+    const s=SUBS[detSub];
+    pill.textContent=s.l;
+    pill.style.cssText=`background:${s.bg};color:${s.c};border-color:${s.c}44`;
+    pill.classList.add('show');
+  } else pill.classList.remove('show');
+}
+function onKey(e){if(e.key==='Enter')addTask();}
+
+function addTask(textOverride, subOverride, dateOverride){
+  const v=(textOverride||document.getElementById('taskIn').value).trim();
+  if(!v)return;
+  const sub=subOverride||detSub;
+  const date=dateOverride||suggestDate(v,sub);
+  tasks.unshift({id:uid(),text:v,sub,date,done:false,flagged:false,added:today()});
+  if(!textOverride){
+    document.getElementById('taskIn').value='';
+    detSub=null;
+    document.getElementById('subPill').classList.remove('show');
+  }
+  save();renderTasks();checkPenalty();
+}
+
+// ══════════════════════════════════════════
+// RENDER TASKS
+// ══════════════════════════════════════════
+function renderTasks(){
+  const td=today();
+  // Show today's tasks + overdue undone tasks
+  const todayT=tasks.filter(t=>t.date===td||(t.date<td&&!t.done&&t.date));
+  const sorted=[...todayT].sort((a,b)=>{
+    if(a.flagged&&!b.flagged)return -1;
+    if(!a.flagged&&b.flagged)return 1;
+    if(!a.done&&b.done)return -1;
+    if(a.done&&!b.done)return 1;
+    return 0;
+  });
+  const el=document.getElementById('taskList');
+  const heavy_undone=sorted.filter(t=>!t.done&&isHeavy(t.text));
+  if(!sorted.length){
+    el.innerHTML='<div class="empty">No tasks today. Add one above.</div>';
+  } else {
+    el.innerHTML=sorted.map(t=>{
+      const s=t.sub?SUBS[t.sub]:null;
+      const clash=!t.done&&isHeavy(t.text)&&heavy_undone.filter(x=>x.id!==t.id).length>0;
+      const overdue=t.date&&t.date<td&&!t.done;
+      return`<div class="task-item${t.flagged?' flagged':''}${t.done?' done':''}${clash?' clash':''}">
+        <button class="tick" onclick="completTask('${t.id}')" title="Done +£8">✓</button>
+        <button class="flag-btn" onclick="toggleFlag('${t.id}')">★</button>
+        <div class="sub-dot" style="background:${s?s.c:'var(--dim)'}"></div>
+        <div class="task-body">
+          <div class="task-txt">${overdue?'<span class="overdue-tag">↑ overdue</span>':''}${esc(t.text)}</div>
+          <div class="task-meta">
+            ${s?`<span class="sub-badge" style="background:${s.bg};color:${s.c}">${s.sh}</span>`:''}
+            <button class="date-tag" onclick="openDate('${t.id}')">${fmtD(t.date)||'set date'}</button>
+            ${clash?'<span class="clash-warn">⚠ writing clash</span>':''}
+          </div>
+        </div>
+        <button class="del-btn" onclick="delTask('${t.id}')">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  // Suggestions
+  const sugs=generateSuggestions();
+  const sugSection=document.getElementById('sugSection');
+  const sugList=document.getElementById('sugList');
+  if(sugs.length){
+    sugSection.style.display='block';
+    sugList.innerHTML=sugs.map(sg=>{
+      const s=SUBS[sg.sub];
+      return`<div class="sug-item">
+        <div class="sug-dot" style="background:${s.c}"></div>
+        <div class="task-body">
+          <div class="sug-txt">${esc(sg.text)}</div>
+          <div class="sug-why">${esc(sg.why)}</div>
+        </div>
+        <button class="sug-approve" onclick="approveSug('${sg.id}','${esc(sg.text)}','${sg.sub}','${sg.date}')">+ Add</button>
+        <button class="sug-decline" onclick="declineSug('${sg.id}')">×</button>
+      </div>`;
+    }).join('');
+  } else sugSection.style.display='none';
+}
+
+function completTask(id){
+  const t=tasks.find(t=>t.id===id);
+  if(!t||t.done)return;
+  t.done=true;t.flagged=false;
+  // Add £8
+  savings=Math.min(MB_GOAL,savings+SES_VAL);
+  save();renderTasks();renderMb();checkPenalty();
+  // Flash macbook %
+  const el=document.getElementById('mbPct');
+  el.style.color='var(--ok)';setTimeout(()=>el.style.color='',700);
+}
+function toggleFlag(id){const t=tasks.find(t=>t.id===id);if(t){t.flagged=!t.flagged;save();renderTasks();}}
+function delTask(id){tasks=tasks.filter(t=>t.id!==id);save();renderTasks();checkPenalty();}
+
+function approveSug(id,text,sub,date){
+  addTask(text,sub,date);
+  declined=[...declined,id]; // remove from suggestions
+  save();renderTasks();
+}
+function declineSug(id){
+  declined=[...declined,id];
+  save();renderTasks();
+}
+
+// ══════════════════════════════════════════
+// DATE OVERRIDE
+// ══════════════════════════════════════════
+function openDate(id){
+  editId=id;
+  const t=tasks.find(t=>t.id===id);
+  document.getElementById('datePicker').value=t.date||today();
+  document.getElementById('dateOverlay').classList.add('open');
+}
+function confirmDate(){
+  const v=document.getElementById('datePicker').value;
+  if(v&&editId){const t=tasks.find(t=>t.id===editId);if(t){t.date=v;save();renderTasks();}}
+  closeModal('dateOverlay');editId=null;
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ══════════════════════════════════════════
+// PAPER TRACKER
+// ══════════════════════════════════════════
+function renderPaperTracker(){
+  document.getElementById('paperTracker').innerHTML=Object.entries(SUBS).map(([k,s])=>{
+    if(!papers[k]){papers[k]={papers:{},topics:[],errors:{}};}
+    const pd=papers[k];
+    const prows=Object.entries(pd.papers||{}).map(([pl,entries])=>{
+      const sid=k+'-'+pl.replace(/[^a-z0-9]/gi,'_');
+      const chips=entries.map((e,i)=>{
+        const g=gLabel(e.pct);const gc=gColor(e.pct);
+        return`<div class="e-chip">
+          <span class="e-yr">${esc(e.yr)}&nbsp;</span>
+          <span class="e-pct" style="color:${gc}">${e.pct}%</span>
+          <span class="grade-inline" style="background:${gc}22;color:${gc}">${g}</span>
+          <div class="e-del" onclick="delEntry('${k}','${esc(pl)}',${i})">×</div>
+        </div>`;
+      }).join('');
+      // Error section — shown after entries
+      const errKey=k+'|||'+pl;
+      const savedErrors=(pd.errors&&pd.errors[pl])||[];
+      const errTags=savedErrors.map(e=>`<div class="error-tag sorted">${esc(e)}</div>`).join('');
+      return`<div class="paper-row" style="align-items:flex-start;flex-direction:column;gap:5px">
+        <div style="display:flex;align-items:center;gap:7px;width:100%;flex-wrap:wrap">
+          <div class="paper-lbl" title="${esc(pl)}">${esc(pl.replace(/\s*\(.*\)/,''))}</div>
+          <div class="entries">${chips}
+            <div class="add-row">
+              <input class="mini-in" id="yr-${sid}" placeholder="year" style="width:40px" maxlength="4" onkeydown="if(event.key==='Enter'){event.preventDefault();addEntry('${k}','${esc(pl)}','${sid}')}">
+              <input class="mini-in" id="pc-${sid}" placeholder="%" type="number" min="0" max="100" style="width:36px" onkeydown="if(event.key==='Enter'){event.preventDefault();addEntry('${k}','${esc(pl)}','${sid}')}">
+              <button class="mini-btn" onclick="addEntry('${k}','${esc(pl)}','${sid}')">+</button>
+            </div>
+          </div>
+        </div>
+        ${entries.length?`<div style="padding-left:74px;width:100%">
+          <div class="error-input-row">
+            <input class="error-in" id="err-${sid}" placeholder="note errors from this paper…" onkeydown="if(event.key==='Enter'){event.preventDefault();sortErrors('${k}','${esc(pl)}','${sid}')}">
+            <button class="ai-btn" id="aibtn-${sid}" onclick="sortErrors('${k}','${esc(pl)}','${sid}')">AI Sort</button>
+          </div>
+          <div id="aithin-${sid}" class="ai-thinking">Sorting with AI…</div>
+          ${errTags?`<div class="error-tags" id="etags-${sid}">${errTags}</div>`:`<div class="error-tags" id="etags-${sid}"></div>`}
+        </div>`:''}
+      </div>`;
+    }).join('');
+
+    // Topic row
+    const tents=(pd.topics||[]).map((e,i)=>{
+      const g=gLabel(e.pct);const gc=gColor(e.pct);
+      return`<div class="e-chip">
+        <span class="e-yr" style="max-width:55px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.lbl)}&nbsp;</span>
+        <span class="e-pct" style="color:${gc}">${e.pct}%</span>
+        <span class="grade-inline" style="background:${gc}22;color:${gc}">${g}</span>
+        <div class="e-del" onclick="delTopic('${k}',${i})">×</div>
+      </div>`;
+    }).join('');
+    const tid=k+'_t';
+    const trow=`<div class="paper-row">
+      <div class="paper-lbl topic-lbl">Topic Qs</div>
+      <div class="entries">${tents}
+        <div class="add-row">
+          <input class="mini-in" id="tl-${tid}" placeholder="topic" style="width:58px" onkeydown="if(event.key==='Enter'){event.preventDefault();addTopic('${k}','${tid}')}">
+          <input class="mini-in" id="tp-${tid}" placeholder="%" type="number" min="0" max="100" style="width:36px" onkeydown="if(event.key==='Enter'){event.preventDefault();addTopic('${k}','${tid}')}">
+          <button class="mini-btn" onclick="addTopic('${k}','${tid}')">+</button>
+        </div>
+      </div>
+    </div>`;
+
+    return`<div class="psb">
+      <div class="psb-hdr">
+        <div class="psb-dot" style="background:${s.c}"></div>
+        <div class="psb-name">${s.l}</div>
+      </div>
+      <div class="psb-rows">${prows}${trow}</div>
+    </div>`;
+  }).join('');
+}
+
+function addEntry(sub,pl,sid){
+  const yr=document.getElementById('yr-'+sid).value.trim();
+  const pct=parseInt(document.getElementById('pc-'+sid).value);
+  if(!yr||isNaN(pct)||pct<0||pct>100)return;
+  if(!papers[sub].papers[pl])papers[sub].papers[pl]=[];
+  papers[sub].papers[pl].push({yr,pct});
+  document.getElementById('yr-'+sid).value='';
+  document.getElementById('pc-'+sid).value='';
+  save();renderPaperTracker();renderWeak();renderSummary();
+}
+function delEntry(sub,pl,i){
+  papers[sub].papers[pl].splice(i,1);
+  save();renderPaperTracker();renderWeak();renderSummary();
+}
+function addTopic(sub,tid){
+  const lbl=document.getElementById('tl-'+tid).value.trim();
+  const pct=parseInt(document.getElementById('tp-'+tid).value);
+  if(!lbl||isNaN(pct)||pct<0||pct>100)return;
+  if(!papers[sub].topics)papers[sub].topics=[];
+  papers[sub].topics.push({lbl,pct});
+  document.getElementById('tl-'+tid).value='';
+  document.getElementById('tp-'+tid).value='';
+  save();renderPaperTracker();renderWeak();renderSummary();
+}
+function delTopic(sub,i){
+  papers[sub].topics.splice(i,1);
+  save();renderPaperTracker();renderWeak();renderSummary();
+}
+
+// ══════════════════════════════════════════
+// AI ERROR SORTING
+// ══════════════════════════════════════════
+async function sortErrors(sub,pl,sid){
+  const errIn=document.getElementById('err-'+sid);
+  const text=errIn.value.trim();
+  if(!text)return;
+
+  const btn=document.getElementById('aibtn-'+sid);
+  const thinking=document.getElementById('aithin-'+sid);
+  const tagsEl=document.getElementById('etags-'+sid);
+
+  btn.disabled=true;
+  thinking.style.display='block';
+
+  const subData=SUBS[sub];
+  const existingTopics=subData.topics.join(', ');
+
+  // Get previous errors for pattern detection
+  const prevErrors=Object.values(papers[sub].errors||{}).flat().join('; ');
+
+  const prompt=`You are helping a GCSE student analyse their exam errors.
+Subject: ${subData.l}
+Paper: ${pl}
+Known topics: ${existingTopics}
+
+Student's errors from this paper: "${text}"
+Previous errors across sessions: "${prevErrors}"
+
+Do two things:
+1. Sort each error into a topic from the known list (or create a short new topic name if needed)
+2. Identify any patterns — errors appearing multiple times
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "tagged": ["Topic: error description", "Topic: error description"],
+  "patterns": ["Pattern description if any"]
+}
+No extra text, no markdown, just the JSON.`;
+
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'{}';
+    let parsed;
+    try{parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());}
+    catch{parsed={tagged:[text],patterns:[]};}
+
+    // Save tagged errors
+    if(!papers[sub].errors)papers[sub].errors={};
+    if(!papers[sub].errors[pl])papers[sub].errors[pl]=[];
+    papers[sub].errors[pl].push(...(parsed.tagged||[text]));
+
+    // Add topics to weak list if not already there
+    (parsed.tagged||[]).forEach(t=>{
+      const colonIdx=t.indexOf(':');
+      if(colonIdx>0){
+        const topicName=t.slice(0,colonIdx).trim();
+        const exists=papers[sub].topics.some(tp=>tp.lbl.toLowerCase()===topicName.toLowerCase());
+        if(!exists){
+          if(!papers[sub].topics)papers[sub].topics=[];
+          // Don't add pct here — it's an error flag not a score
+        }
+      }
+    });
+
+    save();
+    errIn.value='';
+    thinking.style.display='none';
+    btn.disabled=false;
+
+    // Render tags
+    const allTags=[...papers[sub].errors[pl]];
+    const patternNote=parsed.patterns&&parsed.patterns.length&&parsed.patterns[0]
+      ?`<div class="error-tag" style="color:var(--danger);border-color:rgba(240,98,146,.3)">⚠ Pattern: ${esc(parsed.patterns[0])}</div>`:'';
+    tagsEl.innerHTML=allTags.map(e=>`<div class="error-tag sorted">${esc(e)}</div>`).join('')+patternNote;
+    renderWeak();
+
+  } catch(e){
+    thinking.style.display='none';
+    btn.disabled=false;
+    tagsEl.innerHTML=`<div class="error-tag" style="color:var(--danger)">AI unavailable — errors saved as-is</div>`;
+    if(!papers[sub].errors)papers[sub].errors={};
+    if(!papers[sub].errors[pl])papers[sub].errors[pl]=[];
+    papers[sub].errors[pl].push(text);
+    save();
+  }
+}
+
+// ══════════════════════════════════════════
+// WEAK TOPICS
+// ══════════════════════════════════════════
+function renderWeak(){
+  const el=document.getElementById('weakGrid');
+  const byS={};
+  Object.entries(papers).forEach(([sub,pd])=>{
+    const w=(pd.topics||[]).filter(e=>e.pct<70);
+    if(w.length)byS[sub]=w;
+  });
+  if(!Object.keys(byS).length){
+    el.innerHTML='<div class="empty">No weak topics yet. Low topic scores appear here.</div>';return;
+  }
+  el.innerHTML=Object.entries(byS).map(([sub,items])=>{
+    const s=SUBS[sub];
+    const counts={};
+    items.forEach(i=>{if(!counts[i.lbl])counts[i.lbl]=[];counts[i.lbl].push(i.pct);});
+    return`<div class="weak-sub">
+      <div class="weak-hdr">
+        <div class="weak-dot" style="background:${s.c}"></div>
+        <div class="weak-name" style="color:${s.c}">${s.l}</div>
+      </div>
+      <div class="weak-pills">
+        ${Object.entries(counts).map(([lbl,pcts])=>{
+          const n=pcts.length,avg=Math.round(pcts.reduce((a,b)=>a+b,0)/n);
+          return`<div class="wpill ${n>=3?'x3':n>=2?'x2':''}">${esc(lbl)} — ${avg}%${n>1?` ×${n}`:''}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// SCORE SUMMARY
+// ══════════════════════════════════════════
+function renderSummary(){
+  const el=document.getElementById('scoreSummary');
+  const rows=[];
+  Object.entries(papers).forEach(([sub,pd])=>{
+    const all=[];
+    Object.values(pd.papers||{}).forEach(en=>en.forEach(e=>all.push(e.pct)));
+    (pd.topics||[]).forEach(e=>all.push(e.pct));
+    if(!all.length)return;
+    const avg=Math.round(all.reduce((a,b)=>a+b,0)/all.length);
+    rows.push({sub,avg});
+  });
+  if(!rows.length){el.innerHTML='<div class="empty">Log scores to see averages.</div>';return;}
+  rows.sort((a,b)=>a.avg-b.avg);
+  el.innerHTML=rows.map(r=>{
+    const s=SUBS[r.sub];
+    return`<div class="score-row-item">
+      <div style="width:5px;height:5px;border-radius:50%;background:${s.c};flex-shrink:0"></div>
+      <div style="font-size:10px;flex:1;color:var(--muted)">${s.l}</div>
+      <div class="score-bar-wrap"><div class="score-bar" style="width:${r.avg}%;background:${s.c}"></div></div>
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;width:30px;text-align:right;color:${gColor(r.avg)}">${r.avg}%</div>
+      <div style="font-size:9px;padding:1px 5px;border-radius:3px;background:${gColor(r.avg)}22;color:${gColor(r.avg)};font-family:'Syne',sans-serif;font-weight:700">${gLabel(r.avg)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// MACBOOK
+// ══════════════════════════════════════════
+function renderMb(){
+  const pct=Math.min(100,Math.round(savings/MB_GOAL*100));
+  document.getElementById('mbFill').style.width=pct+'%';
+  document.getElementById('mbSaved').textContent='£'+savings+' saved';
+  document.getElementById('mbPct').textContent=pct+'%';
+}
+function editMb(){
+  const v=prompt('Current: £'+savings+'\nNew amount:',savings);
+  if(v===null)return;
+  const n=parseInt(v);
+  if(!isNaN(n)&&n>=0){savings=Math.min(MB_GOAL,n);save();renderMb();}
+}
+
+// ══════════════════════════════════════════
+// PENALTY / CLOSE DAY
+// ══════════════════════════════════════════
+function checkPenalty(){
+  const td=today();
+  const todayT=tasks.filter(t=>t.added===td);
+  const hasMissed=todayT.some(t=>!t.done);
+  document.getElementById('penBtn').style.display=hasMissed?'block':'none';
+}
+
+function runPenalty(){
+  const td=today();
+  const todayT=tasks.filter(t=>t.added===td);
+  const done=todayT.filter(t=>t.done).length;
+  const missed=todayT.filter(t=>!t.done).length;
+  if(!missed){alert('All done. Nothing to deduct.');return;}
+  let pen=missed*MISS_PEN;
+  if(done===0&&missed>=2)pen+=4;
+  if(!confirm(`Close today?\n${missed} task${missed!==1?'s':''} incomplete → -£${pen} from MacBook goal.`))return;
+  savings=Math.max(0,savings-pen);
+  save();renderMb();
+  const note=document.getElementById('penNote');
+  note.textContent=`-£${pen} · ${missed} missed task${missed!==1?'s':''}. Make it up tomorrow.`;
+  note.classList.add('show');
+  setTimeout(()=>note.classList.remove('show'),7000);
+  document.getElementById('penBtn').style.display='none';
+}
+
+// ══════════════════════════════════════════
+// UPCOMING
+// ══════════════════════════════════════════
+function openUpcoming(){
+  const t=today();
+  const items=[];
+  EXAMS.filter(e=>daysUntil(e.d)>0&&daysUntil(e.d)<=14).forEach(e=>{
+    const s=SUBS[e.s];
+    items.push({sort:e.d,html:`<div class="up-item exam-item">
+      <div class="up-dot" style="background:${s.c}"></div>
+      <div class="up-body">
+        <div class="up-txt" style="color:${s.c}">📝 ${esc(e.l)}</div>
+        <div class="up-when">${daysUntil(e.d)}d · ${fmtD(e.d)}</div>
+      </div>
+    </div>`});
+  });
+  tasks.filter(tk=>!tk.done&&tk.date&&tk.date>t).forEach(tk=>{
+    const s=tk.sub?SUBS[tk.sub]:null;
+    items.push({sort:tk.date,html:`<div class="up-item">
+      <div class="up-dot" style="background:${s?s.c:'var(--dim)'}"></div>
+      <div class="up-body">
+        <div class="up-txt">${s?`<span style="font-size:9px;color:${s.c}">${s.sh}</span> `:''}${esc(tk.text)}</div>
+        <div class="up-when">${fmtD(tk.date)}</div>
+      </div>
+    </div>`});
+  });
+  items.sort((a,b)=>a.sort.localeCompare(b.sort));
+  document.getElementById('upList').innerHTML=items.length?items.map(i=>i.html).join(''):'<div class="empty">Nothing upcoming.</div>';
+  document.getElementById('upOverlay').classList.add('open');
+}
+
+// ══════════════════════════════════════════
+// END OF DAY (auto at 9pm + manual)
+// ══════════════════════════════════════════
+function buildEodContent(){
+  const tomorrow=addDays(today(),1);
+  document.getElementById('eodDateLbl').textContent=fmtD(tomorrow).toUpperCase();
+  const tmrT=tasks.filter(t=>!t.done&&t.date===tomorrow)
+    .sort((a,b)=>(b.flagged?1:0)-(a.flagged?1:0)).slice(0,3);
+  document.getElementById('eodLines').innerHTML=[0,1,2].map(i=>{
+    const t=tmrT[i];const s=t&&t.sub?SUBS[t.sub]:null;
+    const lbl=t?`${s?s.l+' — ':''}${t.text}`:'';
+    return`<div class="cp-line"><div class="cp-num">${i+1}.</div><div class="cp-task">${esc(lbl)}</div></div>`;
+  }).join('');
+  // print
+  document.getElementById('printDate').textContent=fmtD(tomorrow).toUpperCase();
+  document.getElementById('printLines').innerHTML=[0,1,2].map(i=>{
+    const t=tmrT[i];const s=t&&t.sub?SUBS[t.sub]:null;
+    const lbl=t?`${s?s.l+': ':''}${t.text}`:'_______________';
+    return`<div style="display:flex;gap:6mm;margin-bottom:3mm"><div style="color:#aaa;flex-shrink:0">${i+1}.</div><div style="flex:1;border-bottom:.5px solid #ccc;padding-bottom:1mm">${esc(lbl)}</div></div>`;
+  }).join('');
+}
+function openEod(){buildEodContent();document.getElementById('eodOverlay').classList.add('open');}
+
+// Auto-show EOD banner at 9pm
+function checkEodTime(){
+  const h=new Date().getHours();
+  const banner=document.getElementById('eodBanner');
+  const shownKey='rv_eod_shown_'+today();
+  if(h>=EOD_HOUR&&!G(shownKey)){
+    banner.classList.add('show');
+    P(shownKey,true);
+    buildEodContent(); // pre-populate silently
+  }
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function init(){
+  renderHeader();
+  renderStrip();
+  renderTasks();
+  renderPaperTracker();
+  renderWeak();
+  renderSummary();
+  renderMb();
+  checkPenalty();
+  checkEodTime();
+
+  // Check EOD every minute
+  setInterval(checkEodTime,60000);
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown',e=>{
+    if(e.key==='t'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){
+      document.getElementById('taskIn').focus();e.preventDefault();
+    }
+    if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));
+  });
+}
+
+init();
+</script>
+</body>
+</html>
